@@ -11,7 +11,7 @@ import (
 )
 
 var expectedQuotas = &ProjectQuotasResponse{
-	NetworkDirectPublicIPs: []quota{
+	NetworkDirectPublicIPs: []Quota{
 		{Value: 5, Used: 3},
 	},
 }
