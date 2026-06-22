@@ -33,13 +33,13 @@ type Port struct {
 type PortCreateDTO struct {
 	ProjectID        string   `json:"project_id"`
 	Description      *string  `json:"description,omitempty"`
-	SecurityGroupIDs []string `json:"security_group_ids,omitempty"`
+	SecurityGroupIDs []string `json:"security_group_ids"`
 	AdminStateUp     *bool    `json:"admin_state_up,omitempty"`
 }
 
 type PortUpdateDTO struct {
 	Description      *string  `json:"description,omitempty"`
-	SecurityGroupIDs []string `json:"security_group_ids,omitempty"`
+	SecurityGroupIDs []string `json:"security_group_ids"`
 	AdminStateUp     *bool    `json:"admin_state_up,omitempty"`
 }
 

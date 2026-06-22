@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
@@ -169,6 +170,36 @@ func TestPublicNetAPIClient_CreatePort(t *testing.T) {
 		require.Equal(t, cfg.AuthToken, httpClient.request.Header.Get(xAuthHeader))
 	})
 
+	t.Run("EmptySecurityGroupIDs", func(t *testing.T) {
+		httpClient := &testHTTPClient{
+			response: &http.Response{
+				Body:       io.NopCloser(strings.NewReader(apiPortDetailJSON)),
+				StatusCode: http.StatusCreated,
+			},
+		}
+		cfg := &Config{
+			AuthToken:  "testToken",
+			URL:        "http://test.com",
+			HTTPClient: httpClient,
+		}
+
+		client, _ := NewPublicNetAPIClient(cfg)
+
+		dto := &PortCreateDTO{
+			ProjectID:        "test_project",
+			SecurityGroupIDs: []string{},
+		}
+
+		port, err := client.CreatePort(context.Background(), dto)
+		require.NoError(t, err)
+		require.Equal(t, expectedPort, port)
+
+		var body PortCreateDTO
+		require.NoError(t, json.NewDecoder(httpClient.request.Body).Decode(&body))
+		require.NotNil(t, body.SecurityGroupIDs)
+		require.Empty(t, body.SecurityGroupIDs)
+	})
+
 	t.Run("APIError", func(t *testing.T) {
 		httpClient := &testHTTPClient{
 			response: &http.Response{
@@ -224,6 +255,33 @@ func TestPublicNetAPIClient_UpdatePort(t *testing.T) {
 		require.Equal(t, "http://test.com/v1/public_ports/test_port", httpClient.request.URL.String())
 		require.Equal(t, http.MethodPatch, httpClient.request.Method)
 		require.Equal(t, cfg.AuthToken, httpClient.request.Header.Get(xAuthHeader))
+	})
+
+	t.Run("EmptySecurityGroupIDs", func(t *testing.T) {
+		httpClient := &testHTTPClient{
+			response: &http.Response{
+				Body:       io.NopCloser(strings.NewReader(apiPortDetailJSON)),
+				StatusCode: http.StatusOK,
+			},
+		}
+		cfg := &Config{
+			AuthToken:  "testToken",
+			URL:        "http://test.com",
+			HTTPClient: httpClient,
+		}
+
+		client, _ := NewPublicNetAPIClient(cfg)
+
+		port, err := client.UpdatePort(context.Background(), "test_port", &PortUpdateDTO{
+			SecurityGroupIDs: []string{},
+		})
+		require.NoError(t, err)
+		require.Equal(t, expectedPort, port)
+
+		var body PortUpdateDTO
+		require.NoError(t, json.NewDecoder(httpClient.request.Body).Decode(&body))
+		require.NotNil(t, body.SecurityGroupIDs)
+		require.Empty(t, body.SecurityGroupIDs)
 	})
 
 	t.Run("APIError", func(t *testing.T) {
